@@ -21,6 +21,14 @@ int main(int argc, char **argv)
 	Graph g;
 	if (args.randomGraphSize) {
 		g = std::move(Graph::randomGraph(args.randomGraphSize));
+		if (!args.randomGraphOutputFile.empty()) {
+			string err = g.toFile(args.randomGraphOutputFile);
+			if (!err.empty()) {
+				cerr << err << endl;
+				return 1;
+			}
+			return 0;
+		}
 	} else {
 		auto r = Graph::fromFile(args.inputFile);
 		if (!r) {

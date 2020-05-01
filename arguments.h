@@ -10,6 +10,7 @@ struct Arguments
 	int randomGraphSize = 0;
 	std::string inputFile;
 	std::string outputFile;
+	std::string randomGraphOutputFile;
 	bool quiet = false;
 
 	bool verify() const;

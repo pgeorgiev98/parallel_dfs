@@ -5,6 +5,29 @@
 
 using namespace std;
 
+string Graph::toFile(const string &path)
+{
+	ofstream out(path, ofstream::out);
+	if (!out) {
+		// TODO: failure reason
+		return "Failed to open file " + path;
+	}
+
+	out << nodeCount << endl;
+	for (int i = 0; i < nodeCount; ++i) {
+		for (int j = 0; j < nodeCount; ++j) {
+			out << int(relations[i][j]) << (j == nodeCount - 1 ? "" : " ");
+		}
+		out << endl;
+	}
+
+	if (!out) {
+		// TODO: failure reason
+		return "Failed to write to " + path;
+	}
+
+	return string();
+}
 
 Result<Graph, std::string> Graph::fromFile(const std::string &path)
 {
