@@ -1,5 +1,6 @@
 #include "arguments.h"
 #include "graph.h"
+#include "log.h"
 
 #include <iostream>
 using namespace std;
@@ -8,11 +9,14 @@ int main(int argc, char **argv)
 {
 	Arguments args = Arguments::parseArguments(argc, argv);
 
-	cout << "Threads: " << args.threadCount << endl;
-	cout << "Graph size: " << args.randomGraphSize << endl;
-	cout << "Input file: " << args.inputFile << endl;
-	cout << "Output file: " << args.outputFile << endl;
-	cout << "Quiet: " << boolalpha << args.quiet << endl;
+	if (args.quiet)
+		Logger::setMaximumLogLevel(Logger::LogLevel::Info);
+
+	logDebug() << "Threads:" << args.threadCount;
+	logDebug() << "Graph size:" << args.randomGraphSize;
+	logDebug() << "Input file:" << args.inputFile;
+	logDebug() << "Output file:" << args.outputFile;
+	logDebug() << "Quiet:" << (args.quiet ? "true" : "false");
 
 	Graph g;
 	if (args.randomGraphSize) {
@@ -20,7 +24,7 @@ int main(int argc, char **argv)
 	} else {
 		auto r = Graph::fromFile(args.inputFile);
 		if (!r) {
-			cerr << r.error() << endl;
+			logError() << r.error();
 			return 1;
 		}
 		g = std::move(*r);
@@ -32,6 +36,7 @@ int main(int argc, char **argv)
 		}
 		cout << endl;
 	}
+
 
 	return 0;
 }
