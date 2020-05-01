@@ -2,6 +2,7 @@
 #define ARGUMENTS_H_INCLUDED
 
 #include <string>
+#include <iostream>
 
 struct Arguments
 {
@@ -13,6 +14,7 @@ struct Arguments
 
 	bool verify() const;
 	static Arguments parseArguments(int argc, char **argv);
+	static void printUsage(const char *arg0, std::ostream &out);
 };
 
 #endif

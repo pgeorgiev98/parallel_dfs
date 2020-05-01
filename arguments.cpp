@@ -47,39 +47,40 @@ bool Arguments::verify() const
 	return true;
 }
 
-Arguments Arguments::parseArguments(int argc, char **argv)
+static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 {
-	Arguments args;
-
-	for (int r; (r = getopt(argc, argv, "t:n:i:o:q")) != -1; ) {
+	for (int r; (r = getopt(argc, argv, "ht:n:i:o:q")) != -1; ) {
 		switch (r) {
 		case '?':
-			exit(1);
+			return 1;
+
+		case 'h':
+			return -1;
 
 		case 't':
 			if (!argStringTo(optarg, args.threadCount,
 						[](int t) { return t > 0; },
 						"Invalid argument to -t"))
-				exit(1);
+				return 1;
 			break;
 
 		case 'n':
 			if (!argStringTo(optarg, args.randomGraphSize,
 						[](int n) { return n > 0; },
 						"Invalid argument to -n"))
-				exit(1);
+				return 1;
 			break;
 
 		case 'i':
 			if (!argStringTo(optarg, args.inputFile,
 						"Invalid argument to -i"))
-				exit(1);
+				return 1;
 			break;
 
 		case 'o':
 			if (!argStringTo(optarg, args.outputFile,
 						"Invalid argument to -o"))
-				exit(1);
+				return 1;
 			break;
 
 		case 'q':
@@ -87,13 +88,44 @@ Arguments Arguments::parseArguments(int argc, char **argv)
 			break;
 
 		default:
-			exit(2);
+			return 2;
+		}
+	}
+
+	return 0;
+}
+
+Arguments Arguments::parseArguments(int argc, char **argv)
+{
+	Arguments args;
+
+	int e = parseArgumentsInternal(argc, argv, args);
+	if (e != 0) {
+		if (e == -1) {
+			printUsage(argv[0], cout);
+			exit(0);
+		} else {
+			printUsage(argv[0], cerr);
+			exit(e);
 		}
 	}
 
 	if (!args.verify()) {
+		printUsage(argv[0], cerr);
 		exit(1);
 	}
 
 	return args;
+}
+
+void Arguments::printUsage(const char *arg0, ostream &out)
+{
+	out << "Usage: " << arg0 << " [OPTIONS]" << endl
+		<< endl
+		<< "  -h         Show this message" << endl
+		<< "  -t num     Run the algorithm on num threads" << endl
+		<< "  -n num     Operate on a randomly generated graph with num nodes" << endl
+		<< "  -i file    Operate on a graph, described in file" << endl
+		<< "  -o file    Write algorithm result in file" << endl
+		<< "  -q         Lower the noise" << endl;
 }
