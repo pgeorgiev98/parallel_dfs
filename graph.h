@@ -8,7 +8,7 @@
 
 struct Graph
 {
-	std::vector<std::vector<bool>> relations;
+	std::vector<std::vector<int>> relations;
 	int nodeCount;
 
 	void traverseSingleThreaded();

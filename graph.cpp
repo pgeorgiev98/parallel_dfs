@@ -9,7 +9,7 @@ using namespace std;
 
 void Graph::traverseSingleThreaded()
 {
-	vector<bool> visited(nodeCount);
+	vector<bool> visited(nodeCount, false);
 	int visitedCount = 0;
 	int startingNode = 0;
 	while (visitedCount < nodeCount) {
@@ -22,11 +22,11 @@ void Graph::traverseSingleThreaded()
 		while (!st.empty()) {
 			int node = st.top();
 			int nextNode = -1;
-			for (int i = startingNode + 1; i < nodeCount; ++i) {
-				if (relations[node][i] && !visited[i]) {
-					visited[i] = true;
+			for (int n : relations[node]) {
+				if (!visited[n]) {
+					visited[n] = true;
 					++visitedCount;
-					nextNode = i;
+					nextNode = n;
 					break;
 				}
 			}
@@ -48,10 +48,14 @@ string Graph::toFile(const string &path)
 	}
 
 	out << nodeCount << endl;
+	vector<bool> v(nodeCount);
 	for (int i = 0; i < nodeCount; ++i) {
-		for (int j = 0; j < nodeCount; ++j) {
-			out << int(relations[i][j]) << (j == nodeCount - 1 ? "" : " ");
-		}
+		for (int j = 0; j < nodeCount; ++j)
+			v[j] = false;
+		for (auto n : relations[i])
+			v[n] = true;
+		for (int j = 0; j < nodeCount; ++j)
+			out << int(v[j]) << (j == nodeCount - 1 ? "" : " ");
 		out << endl;
 	}
 
@@ -83,15 +87,15 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 		g.nodeCount = n;
 		g.relations.resize(n);
 		for (int i = 0; i < n; ++i) {
-			auto &row = g.relations[i];
-			row.resize(n);
+			auto &nodeRel = g.relations[i];
 			for (int j = 0; j < n; ++j) {
 				char v;
 				in >> v;
 				if (!in || (v != '0' && v != '1'))
 					throw "Expected 1 or 0 at row " + to_string(i + 1) +
 						", column " + to_string(j + 1);
-				row[j] = v - '0';
+				if (v == '1')
+					nodeRel.push_back(j);
 			}
 		}
 
@@ -115,10 +119,10 @@ Graph Graph::randomGraph(int nodeCount)
 	g.relations.resize(nodeCount);
 
 	for (int i = 0; i < nodeCount; ++i) {
-		auto &row = g.relations[i];
-		row.resize(nodeCount);
+		auto &nodeRel = g.relations[i];
 		for (int j = 0; j < nodeCount; ++j)
-			row[j] = dist(gen);
+			if (dist(gen))
+				nodeRel.push_back(j);
 	}
 
 	logDebug() << "Graph generated";
