@@ -50,12 +50,12 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 			auto &row = g.relations[i];
 			row.resize(n);
 			for (int j = 0; j < n; ++j) {
-				int v;
+				char v;
 				in >> v;
-				if (!in || (v != 0 && v != 1))
+				if (!in || (v != '0' && v != '1'))
 					throw "Expected 1 or 0 at row " + to_string(i + 1) +
 						", column " + to_string(j + 1);
-				row[j] = v;
+				row[j] = v - '0';
 			}
 		}
 
