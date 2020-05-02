@@ -34,10 +34,13 @@ int main(int argc, char **argv)
 	}
 
 	Chronometer c;
-	logDebug() << "Traversing";
-	c.start();
-	g.traverseSingleThreaded();
-	logInfo() << "Operation took" << c.milliseconds() << "ms";
+	for (int pass = 0; pass < args.passes; ++pass) {
+		logInfo() << (args.passes == 1 ? string("Traversing") :
+			"Traversing pass " + to_string(pass + 1) + "/" + to_string(args.passes));
+		c.start();
+		g.traverseSingleThreaded();
+		logInfo() << "Operation took" << c.milliseconds() << "ms";
+	}
 
 
 	return 0;

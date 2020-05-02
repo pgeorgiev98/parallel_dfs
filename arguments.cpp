@@ -53,7 +53,7 @@ bool Arguments::verify() const
 
 static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 {
-	for (int r; (r = getopt(argc, argv, "ht:n:i:o:s:q")) != -1; ) {
+	for (int r; (r = getopt(argc, argv, "ht:n:p:i:o:s:q")) != -1; ) {
 		string err = "Invalid argument to " + r;
 		switch (r) {
 		case '?':
@@ -70,6 +70,12 @@ static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 
 		case 'n':
 			if (!argStringTo(optarg, args.randomGraphSize,
+						[](int n) { return n > 0; }, err))
+				return 1;
+			break;
+
+		case 'p':
+			if (!argStringTo(optarg, args.passes,
 						[](int n) { return n > 0; }, err))
 				return 1;
 			break;
@@ -131,6 +137,7 @@ void Arguments::printUsage(const char *arg0, ostream &out)
 		<< "  -h         Show this message" << endl
 		<< "  -t num     Run the algorithm on num threads" << endl
 		<< "  -n num     Operate on a randomly generated graph with num nodes" << endl
+		<< "  -p num     Traverse the graph num times" << endl
 		<< "  -i file    Operate on a graph, described in file" << endl
 		<< "  -o file    Write algorithm result in file" << endl
 		<< "  -s file    Save the randomly generated graph to file (needs -n)" << endl

@@ -8,6 +8,7 @@ struct Arguments
 {
 	int threadCount = 0;
 	int randomGraphSize = 0;
+	int passes = 1;
 	std::string inputFile;
 	std::string outputFile;
 	std::string randomGraphOutputFile;
