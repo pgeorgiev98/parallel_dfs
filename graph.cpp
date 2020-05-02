@@ -48,15 +48,14 @@ string Graph::toFile(const string &path)
 	}
 
 	out << nodeCount << endl;
-	vector<bool> v(nodeCount);
+	vector<char> v(nodeCount);
 	for (int i = 0; i < nodeCount; ++i) {
 		for (int j = 0; j < nodeCount; ++j)
-			v[j] = false;
+			v[j] = '0';
 		for (auto n : relations[i])
-			v[n] = true;
-		for (int j = 0; j < nodeCount; ++j)
-			out << int(v[j]) << (j == nodeCount - 1 ? "" : " ");
-		out << endl;
+			v[n] = '1';
+		out.write(v.data(), nodeCount);
+		out.put('\n');
 	}
 
 	if (!out) {
@@ -84,17 +83,32 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 		if (!in)
 			throw string("Expected number of nodes");
 
+		long long position = in.tellg();
+		in.seekg(0, in.end);
+		long long remaining = (long long)in.tellg() - position;
+		in.seekg(position, in.beg);
+
+		vector<char> data(remaining);
+		in.read(data.data(), remaining);
+
+		if (!in)
+			throw string("Failed to read from file");
+
 		g.nodeCount = n;
 		g.relations.resize(n);
+		int index = 0;
 		for (int i = 0; i < n; ++i) {
 			auto &nodeRel = g.relations[i];
 			for (int j = 0; j < n; ++j) {
-				char v;
-				in >> v;
-				if (!in || (v != '0' && v != '1'))
+				while (index < data.size() && data[index] <= ' ')
+					++index;
+				if (index == data.size())
+					throw "Unexpected EOF";
+				char c = data[index++];
+				if (c != '0' && c != '1')
 					throw "Expected 1 or 0 at row " + to_string(i + 1) +
 						", column " + to_string(j + 1);
-				if (v == '1')
+				if (c == '1')
 					nodeRel.push_back(j);
 			}
 		}
