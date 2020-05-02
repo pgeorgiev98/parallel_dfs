@@ -1,4 +1,5 @@
 #include "graph.h"
+#include "log.h"
 
 #include <fstream>
 #include <random>
@@ -7,6 +8,7 @@ using namespace std;
 
 string Graph::toFile(const string &path)
 {
+	logDebug() << "Saving graph to" << path;
 	ofstream out(path, ofstream::out);
 	if (!out) {
 		// TODO: failure reason
@@ -26,11 +28,13 @@ string Graph::toFile(const string &path)
 		return "Failed to write to " + path;
 	}
 
+	logDebug() << "Graph saved";
 	return string();
 }
 
 Result<Graph, std::string> Graph::fromFile(const std::string &path)
 {
+	logDebug() << "Loading graph from file" << path;
 	ifstream in(path, ifstream::in);
 	if (!in) {
 		// TODO: failure reason
@@ -63,11 +67,13 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 		return "Failed to parse file " + path + ": " + string(err);
 	}
 
+	logDebug() << "Graph loaded";
 	return g;
 }
 
 Graph Graph::randomGraph(int nodeCount)
 {
+	logDebug() << "Generating random graph with" << nodeCount << "nodes";
 	random_device rd;
 	mt19937 gen(rd());
 	bernoulli_distribution dist(0.5);
@@ -83,5 +89,6 @@ Graph Graph::randomGraph(int nodeCount)
 			row[j] = dist(gen);
 	}
 
+	logDebug() << "Graph generated";
 	return g;
 }
