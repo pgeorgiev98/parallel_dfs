@@ -11,6 +11,7 @@ struct Graph
 	std::vector<std::vector<bool>> relations;
 	int nodeCount;
 
+	void traverseSingleThreaded();
 	std::string toFile(const std::string &path);
 
 	static Result<Graph, std::string> fromFile(const std::string &path);

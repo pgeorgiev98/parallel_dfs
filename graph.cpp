@@ -3,8 +3,40 @@
 
 #include <fstream>
 #include <random>
+#include <stack>
 
 using namespace std;
+
+void Graph::traverseSingleThreaded()
+{
+	vector<bool> visited(nodeCount);
+	int visitedCount = 0;
+	int startingNode = 0;
+	while (visitedCount < nodeCount) {
+		stack<int> st;
+		while (visited[startingNode])
+			++startingNode;
+		st.push(startingNode);
+		visited[startingNode] = true;
+		++visitedCount;
+		while (!st.empty()) {
+			int node = st.top();
+			int nextNode = -1;
+			for (int i = startingNode + 1; i < nodeCount; ++i) {
+				if (relations[node][i] && !visited[i]) {
+					visited[i] = true;
+					++visitedCount;
+					nextNode = i;
+					break;
+				}
+			}
+			if (nextNode == -1)
+				st.pop();
+			else
+				st.push(nextNode);
+		}
+	}
+}
 
 string Graph::toFile(const string &path)
 {
