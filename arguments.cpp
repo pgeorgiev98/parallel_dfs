@@ -191,5 +191,13 @@ void Arguments::printUsage(const char *arg0, ostream &out)
 		<< "  -i file    Operate on a graph, described in file" << endl
 		<< "  -o file    Write algorithm result in file" << endl
 		<< "  -s file    Save the randomly generated graph to file (needs -n)" << endl
-		<< "  -q         Lower the noise" << endl;
+		<< "  -q         Lower the noise" << endl
+		<< endl << endl
+		<< "Examples:" << endl
+		<< endl
+		<< "dfs -n 30000 -t1,2,4 -p 5     # Run on 30000 node graph with 1, 2 and 4" << endl
+		<< "                              # threads with 5 passes each" << endl
+		<< "dfs -i input.txt -t1-8 -p 3   # Run on graph from input.txt and 1, 2, 3," << endl
+		<< "                              # 4, 5, 6, 7 and 8 cores with 3 passes each" << endl
+		<< "dfs -n 10000 -s output.txt    # Generate random 10000 node graph and save it" << endl;
 }
