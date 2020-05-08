@@ -27,6 +27,8 @@ void Graph::traverseSingleThreaded()
 					visited[n] = true;
 					++visitedCount;
 					nextNode = n;
+					if (visitedCount == nodeCount)
+						return;
 					break;
 				}
 			}
