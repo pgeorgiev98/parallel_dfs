@@ -54,7 +54,7 @@ bool Arguments::verify() const
 static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 {
 	for (int r; (r = getopt(argc, argv, "ht:n:p:i:o:s:q")) != -1; ) {
-		string err = "Invalid argument to " + r;
+		string err = string("Invalid argument to ") + char(r);
 		switch (r) {
 		case '?':
 			return 1;
