@@ -160,7 +160,7 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 
 		g.nodeCount = n;
 		g.relations.resize(n);
-		int index = 0;
+		long long index = 0;
 		for (int i = 0; i < n; ++i) {
 			auto &nodeRel = g.relations[i];
 			for (int j = 0; j < n; ++j) {
