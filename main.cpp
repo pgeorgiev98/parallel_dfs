@@ -34,12 +34,16 @@ int main(int argc, char **argv)
 	}
 
 	Chronometer c;
-	for (int pass = 0; pass < args.passes; ++pass) {
-		logInfo() << (args.passes == 1 ? string("Traversing") :
-			"Traversing pass " + to_string(pass + 1) + "/" + to_string(args.passes));
-		c.start();
-		g.traverseSingleThreaded();
-		logInfo() << "Operation took" << c.milliseconds() << "ms";
+	for (int threads : args.threadCount) {
+		for (int pass = 0; pass < args.passes; ++pass) {
+			logInfo().noNewLine() << "Traversing pass " + to_string(pass + 1) + "/" + to_string(args.passes) << "with" << threads << "threads: ";
+			c.start();
+			if (threads == 1)
+				g.traverseSingleThreaded();
+			else
+				g.traverse(threads);
+			logInfo() << c.milliseconds() << "ms";
+		}
 	}
 
 

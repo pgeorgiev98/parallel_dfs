@@ -33,13 +33,63 @@ bool argStringTo<string>(const char *str, string &value, const string &errorMess
 	return !value.empty();
 }
 
+static vector<string> splitString(const string &str, char delimiter)
+{
+	vector<string> v;
+	string curr;
+	for (auto c : str) {
+		if (c == delimiter) {
+			v.push_back(curr);
+			curr.clear();
+		} else {
+			curr.push_back(c);
+		}
+	}
+	if (!curr.empty())
+		v.push_back(curr);
+	return v;
+}
+
+template<>
+bool argStringTo<vector<int>>(const char *str, vector<int> &value, const string &errorMessage)
+{
+	vector<int> result;
+	string s(str);
+	try {
+		for (const string &value : splitString(s, ',')) {
+			auto range = splitString(value, '-');
+			if (range.size() == 1) {
+				istringstream in(value);
+				int i;
+				in >> i;
+				if (!in || i <= 0)
+					throw errorMessage;
+				result.push_back(i);
+			} else if (range.size() == 2) {
+				istringstream in1(range[0]), in2(range[1]);
+				int a, b;
+				in1 >> a;
+				in2 >> b;
+				if (!in1 || !in2 || a >= b || a <= 0 || b <= 0)
+					throw errorMessage;
+				for (int i = a; i <= b; ++i)
+					result.push_back(i);
+			} else {
+				throw errorMessage;
+			}
+		}
+	} catch (const string &err) {
+		cerr << err << endl;
+		return false;
+	}
+
+	value = result;
+	return true;
+}
+
 
 bool Arguments::verify() const
 {
-	if (threadCount == 0) {
-		cerr << "Thread count expected" << endl;
-		return false;
-	}
 	if ((randomGraphSize == 0) == inputFile.empty()) {
 		cerr << "Either specify graph size or input file" << endl;
 		return false;
@@ -63,8 +113,7 @@ static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 			return -1;
 
 		case 't':
-			if (!argStringTo(optarg, args.threadCount,
-						[](int t) { return t > 0; }, err))
+			if (!argStringTo(optarg, args.threadCount, err))
 				return 1;
 			break;
 
@@ -135,7 +184,8 @@ void Arguments::printUsage(const char *arg0, ostream &out)
 	out << "Usage: " << arg0 << " [OPTIONS]" << endl
 		<< endl
 		<< "  -h         Show this message" << endl
-		<< "  -t num     Run the algorithm on num threads" << endl
+		<< "  -t num     Run the algorithm on num threads. Can be a comma" << endl
+		<< "             separated list of numbers and ranges (See example)" << endl
 		<< "  -n num     Operate on a randomly generated graph with num nodes" << endl
 		<< "  -p num     Traverse the graph num times" << endl
 		<< "  -i file    Operate on a graph, described in file" << endl

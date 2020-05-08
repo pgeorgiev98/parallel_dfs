@@ -2,11 +2,12 @@
 #define ARGUMENTS_H_INCLUDED
 
 #include <string>
+#include <vector>
 #include <iostream>
 
 struct Arguments
 {
-	int threadCount = 0;
+	std::vector<int> threadCount = {1};
 	int randomGraphSize = 0;
 	int passes = 1;
 	std::string inputFile;
