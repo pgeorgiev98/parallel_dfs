@@ -4,6 +4,8 @@
 #include <fstream>
 #include <random>
 #include <stack>
+#include <atomic>
+#include <omp.h>
 
 using namespace std;
 
@@ -36,6 +38,66 @@ void Graph::traverseSingleThreaded()
 				st.pop();
 			else
 				st.push(nextNode);
+		}
+	}
+}
+
+void Graph::traverse(int threads)
+{
+	omp_set_num_threads(threads);
+
+	vector<atomic_flag> atomics(nodeCount);
+	vector<bool> visited(nodeCount, false);
+	atomic<int> visitedCount = 0;
+	atomic<bool> allNodesTraversed = false;
+#pragma omp parallel
+	{
+		int startingNode = 0;
+		for (;;) {
+BEGIN:
+			if (allNodesTraversed.load())
+				break;
+			bool found = false;
+			while (startingNode < nodeCount) {
+				if (!visited[startingNode] && !atomics[startingNode].test_and_set()) {
+					found = true;
+					break;
+				}
+				++startingNode;
+			}
+			if (!found)
+				break;
+
+			visited[startingNode] = true;
+			if (++visitedCount == nodeCount) {
+				allNodesTraversed.store(true);
+				goto BEGIN;
+			}
+
+			stack<int> st;
+			st.push(startingNode);
+			while (!st.empty()) {
+				int node = st.top();
+				int nextNode = -1;
+				for (int n : relations[node]) {
+					if (!visited[n] && !atomics[n].test_and_set()) {
+						visited[n] = true;
+						nextNode = n;
+						if (++visitedCount == nodeCount) {
+							allNodesTraversed.store(true);
+							goto BEGIN;
+						}
+						break;
+					}
+				}
+				if (nextNode == -1) {
+					st.pop();
+					if (allNodesTraversed.load())
+						goto BEGIN;
+				} else {
+					st.push(nextNode);
+				}
+			}
 		}
 	}
 }
