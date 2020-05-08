@@ -1,5 +1,6 @@
 #include "graph.h"
 #include "log.h"
+#include "chronometer.h"
 
 #include <fstream>
 #include <random>
@@ -187,22 +188,34 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 
 Graph Graph::randomGraph(int nodeCount)
 {
+	Chronometer chr;
+	chr.start();
 	logDebug() << "Generating random graph with" << nodeCount << "nodes";
-	random_device rd;
-	mt19937 gen(rd());
-	bernoulli_distribution dist(0.5);
 
 	Graph g;
 	g.nodeCount = nodeCount;
 	g.relations.resize(nodeCount);
 
-	for (int i = 0; i < nodeCount; ++i) {
-		auto &nodeRel = g.relations[i];
-		for (int j = 0; j < nodeCount; ++j)
-			if (dist(gen))
-				nodeRel.push_back(j);
+#pragma omp parallel
+	{
+		random_device rd;
+		mt19937 gen(rd());
+		bernoulli_distribution dist(0.1);
+
+		int thread = omp_get_thread_num();
+		int threads = omp_get_num_threads();
+		int block = nodeCount / threads;
+		int begin = (thread * nodeCount) / threads;
+		int end = ((thread + 1) * nodeCount) / threads;
+
+		for (int i = begin; i < end; ++i) {
+			auto &nodeRel = g.relations[i];
+			for (int j = 0; j < nodeCount; ++j)
+				if (dist(gen))
+					nodeRel.push_back(j);
+		}
 	}
 
-	logDebug() << "Graph generated";
+	logDebug() << "Graph generated for" << chr.milliseconds() << "ms";
 	return g;
 }
