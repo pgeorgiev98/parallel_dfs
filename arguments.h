@@ -13,6 +13,7 @@ struct Arguments
 	std::string inputFile;
 	std::string outputFile;
 	std::string randomGraphOutputFile;
+	std::string outputCsvFile;
 	bool quiet = false;
 
 	bool verify() const;

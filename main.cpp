@@ -2,6 +2,7 @@
 #include "graph.h"
 #include "log.h"
 #include "chronometer.h"
+#include "csv.h"
 
 #include <iostream>
 using namespace std;
@@ -33,7 +34,15 @@ int main(int argc, char **argv)
 		g = std::move(*r);
 	}
 
+	CsvExporter csv;
+	csv.setCell(0, 0, "Threads\\Time (ms)");
+	for (int i = 0; i < args.threadCount.size(); ++i)
+		csv.setCell(0, i + 1, args.threadCount[i]);
+	for (int i = 1; i <= args.passes; ++i)
+		csv.setCell(i, 0, "Pass " + to_string(i));
+
 	Chronometer c;
+	int csvRow = 1;
 	for (int threads : args.threadCount) {
 		for (int pass = 0; pass < args.passes; ++pass) {
 			logInfo().noNewLine() << "Traversing pass " + to_string(pass + 1) + "/" + to_string(args.passes) << "with" << threads << "threads: ";
@@ -42,10 +51,16 @@ int main(int argc, char **argv)
 				g.traverseSingleThreaded();
 			else
 				g.traverse(threads);
-			logInfo() << c.milliseconds() << "ms";
+			int ms = c.milliseconds();
+			logInfo() << ms << "ms";
+			csv.setCell(pass + 1, csvRow, ms);
 		}
+		++csvRow;
 	}
 
+	if (!args.outputCsvFile.empty())
+		if (!csv.write(args.outputCsvFile))
+			cerr << "Failed to save csv file" << endl;
 
 	return 0;
 }

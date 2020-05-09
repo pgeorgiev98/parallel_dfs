@@ -103,7 +103,7 @@ bool Arguments::verify() const
 
 static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 {
-	for (int r; (r = getopt(argc, argv, "ht:n:p:i:o:s:q")) != -1; ) {
+	for (int r; (r = getopt(argc, argv, "ht:n:p:i:o:s:l:q")) != -1; ) {
 		string err = string("Invalid argument to ") + char(r);
 		switch (r) {
 		case '?':
@@ -141,6 +141,11 @@ static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 
 		case 's':
 			if (!argStringTo(optarg, args.randomGraphOutputFile, err))
+				return 1;
+			break;
+
+		case 'l':
+			if (!argStringTo(optarg, args.outputCsvFile, err))
 				return 1;
 			break;
 
@@ -191,6 +196,7 @@ void Arguments::printUsage(const char *arg0, ostream &out)
 		<< "  -i file    Operate on a graph, described in file" << endl
 		<< "  -o file    Write algorithm result in file" << endl
 		<< "  -s file    Save the randomly generated graph to file (needs -n)" << endl
+		<< "  -l file    Save the run times to a csv file" << endl
 		<< "  -q         Lower the noise" << endl
 		<< endl << endl
 		<< "Examples:" << endl
