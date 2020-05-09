@@ -98,12 +98,16 @@ bool Arguments::verify() const
 		cerr << "Option -s requires -n" << endl;
 		return false;
 	}
+	if (randomGraphSize > 0 && randomGraphMaxEdgeCount > randomGraphSize) {
+		cerr << "Invalid argument to -N" << endl;
+		return false;
+	}
 	return true;
 }
 
 static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 {
-	for (int r; (r = getopt(argc, argv, "ht:n:p:i:o:s:l:q")) != -1; ) {
+	for (int r; (r = getopt(argc, argv, "ht:n:N:p:i:o:s:l:q")) != -1; ) {
 		string err = string("Invalid argument to ") + char(r);
 		switch (r) {
 		case '?':
@@ -119,6 +123,12 @@ static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 
 		case 'n':
 			if (!argStringTo(optarg, args.randomGraphSize,
+						[](int n) { return n > 0; }, err))
+				return 1;
+			break;
+
+		case 'N':
+			if (!argStringTo(optarg, args.randomGraphMaxEdgeCount,
 						[](int n) { return n > 0; }, err))
 				return 1;
 			break;
@@ -158,6 +168,8 @@ static int parseArgumentsInternal(int argc, char **argv, Arguments &args)
 		}
 	}
 
+	if (args.randomGraphSize > 0 && args.randomGraphMaxEdgeCount == 0)
+		args.randomGraphMaxEdgeCount = args.randomGraphSize;
 	return 0;
 }
 
@@ -192,6 +204,8 @@ void Arguments::printUsage(const char *arg0, ostream &out)
 		<< "  -t num     Run the algorithm on num threads. Can be a comma" << endl
 		<< "             separated list of numbers and ranges (See example)" << endl
 		<< "  -n num     Operate on a randomly generated graph with num nodes" << endl
+		<< "  -N num     The maximum number of edges connected to each node in" << endl
+		<< "             the randomly generated graph" << endl
 		<< "  -p num     Traverse the graph num times" << endl
 		<< "  -i file    Operate on a graph, described in file" << endl
 		<< "  -o file    Write algorithm result in file" << endl

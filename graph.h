@@ -16,7 +16,7 @@ struct Graph
 	std::string toFile(const std::string &path);
 
 	static Result<Graph, std::string> fromFile(const std::string &path);
-	static Graph randomGraph(int nodeCount);
+	static Graph randomGraph(int nodeCount, int maxEdgeCount);
 };
 
 #endif

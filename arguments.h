@@ -9,6 +9,7 @@ struct Arguments
 {
 	std::vector<int> threadCount = {1};
 	int randomGraphSize = 0;
+	int randomGraphMaxEdgeCount = 0;
 	int passes = 1;
 	std::string inputFile;
 	std::string outputFile;

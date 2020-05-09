@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
 	Graph g;
 	if (args.randomGraphSize) {
-		g = std::move(Graph::randomGraph(args.randomGraphSize));
+		g = std::move(Graph::randomGraph(args.randomGraphSize, args.randomGraphMaxEdgeCount));
 		if (!args.randomGraphOutputFile.empty()) {
 			string err = g.toFile(args.randomGraphOutputFile);
 			if (!err.empty()) {

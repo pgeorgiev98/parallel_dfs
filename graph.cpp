@@ -186,7 +186,7 @@ Result<Graph, std::string> Graph::fromFile(const std::string &path)
 	return g;
 }
 
-Graph Graph::randomGraph(int nodeCount)
+Graph Graph::randomGraph(int nodeCount, int maxEdgeCount)
 {
 	Chronometer chr;
 	chr.start();
@@ -201,7 +201,8 @@ Graph Graph::randomGraph(int nodeCount)
 	{
 		random_device rd;
 		mt19937 gen(rd());
-		bernoulli_distribution dist(0.1);
+		uniform_int_distribution edgeCountDist(0, maxEdgeCount);
+		uniform_int_distribution nodeDist(0, nodeCount - 1);
 
 		int thread = omp_get_thread_num();
 		int threads = omp_get_num_threads();
@@ -211,9 +212,17 @@ Graph Graph::randomGraph(int nodeCount)
 
 		for (int i = begin; i < end; ++i) {
 			auto &nodeRel = g.relations[i];
-			for (int j = 0; j < nodeCount; ++j)
-				if (dist(gen))
-					nodeRel.push_back(j);
+			int nodes = edgeCountDist(gen);
+			vector<bool> conn(nodeCount, false);
+			for (int j = 0; j < nodes; ++j) {
+				for (int n = nodeDist(gen); n < nodeCount; ++n) {
+					if (!conn[n]) {
+						conn[n] = true;
+						nodeRel.push_back(n);
+						break;
+					}
+				}
+			}
 
 			int nc = ++generatedNodesCount;
 			if (nc % 5000 == 0)
