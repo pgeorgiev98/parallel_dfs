@@ -190,12 +190,13 @@ Graph Graph::randomGraph(int nodeCount)
 {
 	Chronometer chr;
 	chr.start();
-	logDebug() << "Generating random graph with" << nodeCount << "nodes";
+	logInfo() << "Generating random graph with" << nodeCount << "nodes";
 
 	Graph g;
 	g.nodeCount = nodeCount;
 	g.relations.resize(nodeCount);
 
+	atomic<int> generatedNodesCount = 0;
 #pragma omp parallel
 	{
 		random_device rd;
@@ -213,9 +214,13 @@ Graph Graph::randomGraph(int nodeCount)
 			for (int j = 0; j < nodeCount; ++j)
 				if (dist(gen))
 					nodeRel.push_back(j);
+
+			int nc = ++generatedNodesCount;
+			if (nc % 5000 == 0)
+				logDebug().noSpace() << int(100.0 * double(nc) / nodeCount) << "\% Done [" << chr.milliseconds() << " ms]";
 		}
 	}
 
-	logDebug() << "Graph generated for" << chr.milliseconds() << "ms";
+	logInfo() << "Graph generated for" << chr.milliseconds() << "ms";
 	return g;
 }
