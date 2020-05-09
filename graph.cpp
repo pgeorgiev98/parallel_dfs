@@ -191,12 +191,17 @@ Graph Graph::randomGraph(int nodeCount, int maxEdgeCount)
 	Chronometer chr;
 	chr.start();
 	logInfo() << "Generating random graph with" << nodeCount << "nodes";
+	long long mem = ((long long)nodeCount * maxEdgeCount) / 2;
+	mem *= sizeof(int);
+	mem /= 1024*1024;
+	logDebug() << "Estimated memory usage:" << mem << "MiB";
 
 	Graph g;
 	g.nodeCount = nodeCount;
 	g.relations.resize(nodeCount);
 
 	atomic<int> generatedNodesCount = 0;
+	int lastMs = 0;
 #pragma omp parallel
 	{
 		random_device rd;
@@ -225,8 +230,18 @@ Graph Graph::randomGraph(int nodeCount, int maxEdgeCount)
 			}
 
 			int nc = ++generatedNodesCount;
-			if (nc % 5000 == 0)
-				logDebug().noSpace() << int(100.0 * double(nc) / nodeCount) << "\% Done [" << chr.milliseconds() << " ms]";
+			if (nc % 100 == 0) {
+#pragma omp critical
+				{
+					int ms = chr.milliseconds();
+					if (ms - lastMs > 3000) {
+						double eta = (ms / 1000.0) * double(nodeCount - nc) / nc;
+						logDebug().noSpace() << int(100.0 * double(nc) / nodeCount) << "\% Done [" << ms / 1000 << " s, ETA: " << int(eta) << " s]";
+						lastMs = ms;
+					}
+				}
+			}
+
 		}
 	}
 
