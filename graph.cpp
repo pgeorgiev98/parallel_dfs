@@ -211,7 +211,6 @@ Graph Graph::randomGraph(int nodeCount, int maxEdgeCount)
 
 		int thread = omp_get_thread_num();
 		int threads = omp_get_num_threads();
-		int block = nodeCount / threads;
 		int begin = (thread * nodeCount) / threads;
 		int end = ((thread + 1) * nodeCount) / threads;
 
