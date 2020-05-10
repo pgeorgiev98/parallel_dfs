@@ -7,6 +7,8 @@
 
 struct Arguments
 {
+	std::string commandLine;
+
 	std::vector<int> threadCount = {1};
 	int randomGraphSize = 0;
 	int randomGraphMaxEdgeCount = 0;

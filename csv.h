@@ -2,7 +2,6 @@
 #define CSV_H_INCLUDED
 
 #include <string>
-#include <vector>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -10,32 +9,42 @@
 class CsvExporter
 {
 public:
-	template<typename T>
-	void setCell(int x, int y, const T &value)
+	struct Modifier
 	{
-		if (y >= data.size())
-			data.resize(y + 1);
-		auto &row = data[y];
-		if (x >= row.size())
-			row.resize(x + 1);
+		enum {
+			NewLine,
+		} type;
+	};
+	static constexpr Modifier endl{Modifier::NewLine};
 
+	template<typename T>
+	CsvExporter &operator<<(const T &value)
+	{
 		std::ostringstream o;
 		o << value;
-		std::string s = o.str();
-		row[x] = s;
+		if (!data.empty() && data[data.size() - 1] != '\n')
+			data += ',';
+		data += o.str();
+		return *this;
+	}
+
+	template<typename T = Modifier>
+	CsvExporter &operator<<(const Modifier &value)
+	{
+		switch (value.type) {
+			case Modifier::NewLine:
+				data += '\n';
+				break;
+			default: {}
+		}
+		return *this;
 	}
 
 	bool write(std::ostream &out)
 	{
-		for (int y = 0; y < data.size(); ++y) {
-			const auto &row = data[y];
-			for (int x = 0; x < row.size(); ++x) {
-				out << row[x];
-				if (x < row.size() - 1)
-					out << ',';
-			}
-			out << std::endl;
-		}
+		out << data;
+		if (!data.empty() && data[data.size() - 1] != '\n')
+			out << '\n';
 
 		return bool(out);
 	}
@@ -50,7 +59,7 @@ public:
 	}
 
 private:
-	std::vector<std::vector<std::string>> data;
+	std::string data;
 };
 
 #endif

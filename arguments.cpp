@@ -177,6 +177,11 @@ Arguments Arguments::parseArguments(int argc, char **argv)
 {
 	Arguments args;
 
+	for (int i = 0; i < argc; ++i) {
+		args.commandLine += ' ';
+		args.commandLine += argv[i];
+	}
+
 	int e = parseArgumentsInternal(argc, argv, args);
 	if (e != 0) {
 		if (e == -1) {
