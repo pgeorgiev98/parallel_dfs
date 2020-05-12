@@ -209,7 +209,7 @@ void Arguments::printUsage(const char *arg0, ostream &out)
 		<< "  -t num     Run the algorithm on num threads. Can be a comma" << endl
 		<< "             separated list of numbers and ranges (See example)" << endl
 		<< "  -n num     Operate on a randomly generated graph with num nodes" << endl
-		<< "  -N num     The maximum number of edges connected to each node in" << endl
+		<< "  -N num     The maximum number of edges begining from each node in" << endl
 		<< "             the randomly generated graph" << endl
 		<< "  -p num     Traverse the graph num times" << endl
 		<< "  -i file    Operate on a graph, described in file" << endl
