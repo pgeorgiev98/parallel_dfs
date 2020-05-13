@@ -10,8 +10,9 @@
 
 using namespace std;
 
-void Graph::traverseSingleThreaded()
+vector<int> Graph::traverseSingleThreaded()
 {
+	vector<int> output;
 	vector<bool> visited(nodeCount, false);
 	int visitedCount = 0;
 	int startingNode = 0;
@@ -21,6 +22,7 @@ void Graph::traverseSingleThreaded()
 			++startingNode;
 		st.push(startingNode);
 		visited[startingNode] = true;
+		output.push_back(startingNode);
 		++visitedCount;
 		while (!st.empty()) {
 			int node = st.top();
@@ -29,9 +31,10 @@ void Graph::traverseSingleThreaded()
 				if (!visited[n]) {
 					visited[n] = true;
 					++visitedCount;
+					output.push_back(n);
 					nextNode = n;
 					if (visitedCount == nodeCount)
-						return;
+						return output;
 					break;
 				}
 			}
@@ -41,23 +44,22 @@ void Graph::traverseSingleThreaded()
 				st.push(nextNode);
 		}
 	}
+	return output;
 }
 
-void Graph::traverse(int threads)
+vector<vector<int>> Graph::traverse(int threads)
 {
+	vector<vector<int>> output(threads);
 	omp_set_num_threads(threads);
 
 	vector<atomic_flag> atomics(nodeCount);
 	vector<bool> visited(nodeCount, false);
 	atomic<int> visitedCount = 0;
-	atomic<bool> allNodesTraversed = false;
 #pragma omp parallel
 	{
+		int thread = omp_get_thread_num();
 		int startingNode = 0;
-		for (;;) {
-BEGIN:
-			if (allNodesTraversed.load())
-				break;
+		while (visitedCount.load() < nodeCount) {
 			bool found = false;
 			while (startingNode < nodeCount) {
 				if (!visited[startingNode] && !atomics[startingNode].test_and_set()) {
@@ -70,37 +72,39 @@ BEGIN:
 				break;
 
 			visited[startingNode] = true;
-			if (++visitedCount == nodeCount) {
-				allNodesTraversed.store(true);
-				goto BEGIN;
-			}
+			output[thread].push_back(startingNode);
+			if (++visitedCount == nodeCount)
+				break;
 
 			stack<int> st;
 			st.push(startingNode);
 			while (!st.empty()) {
 				int node = st.top();
 				int nextNode = -1;
+				bool allNodesTraversed = false;
 				for (int n : relations[node]) {
 					if (!visited[n] && !atomics[n].test_and_set()) {
 						visited[n] = true;
+						output[thread].push_back(n);
 						nextNode = n;
-						if (++visitedCount == nodeCount) {
-							allNodesTraversed.store(true);
-							goto BEGIN;
-						}
+						if (++visitedCount == nodeCount)
+							allNodesTraversed = true;
 						break;
 					}
 				}
+				if (allNodesTraversed)
+					break;
 				if (nextNode == -1) {
 					st.pop();
-					if (allNodesTraversed.load())
-						goto BEGIN;
+					if (visitedCount.load() == nodeCount)
+						break;
 				} else {
 					st.push(nextNode);
 				}
 			}
 		}
 	}
+	return output;
 }
 
 string Graph::toFile(const string &path)

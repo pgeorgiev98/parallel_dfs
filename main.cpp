@@ -43,15 +43,16 @@ int main(int argc, char **argv)
 	csv << CsvExporter::endl;
 
 	Chronometer c;
+	vector<vector<int>> output;
 	for (int threads : args.threadCount) {
 		csv << threads;
 		for (int pass = 0; pass < args.passes; ++pass) {
 			logInfo().noNewLine() << "Traversing pass " + to_string(pass + 1) + "/" + to_string(args.passes) << "with" << threads << "threads: ";
 			c.start();
 			if (threads == 1)
-				g.traverseSingleThreaded();
+				output = {g.traverseSingleThreaded()};
 			else
-				g.traverse(threads);
+				output = g.traverse(threads);
 			int ms = c.milliseconds();
 			logInfo() << ms << "ms";
 			csv << ms;
@@ -62,6 +63,19 @@ int main(int argc, char **argv)
 	if (!args.outputCsvFile.empty())
 		if (!csv.write(args.outputCsvFile))
 			cerr << "Failed to save csv file" << endl;
+
+	if (!args.outputFile.empty()) {
+		ofstream of(args.outputFile, ofstream::out);
+		if (!of) {
+			logError() << "Failed to open output file"; // TODO: why?
+		} else {
+			for (const auto &o : output)
+				for (int i = 0; i < o.size(); ++i)
+					of << o[i] << (i == o.size() - 1 ? '\n' : ' ');
+			if (!of)
+				logError() << "An error occurred while writing to output file"; // TODO: what?
+		}
+	}
 
 	return 0;
 }
